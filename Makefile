@@ -11,6 +11,7 @@ SRC = src/edge_music.vala \
       src/songs_view.vala \
       src/search_entry.vala \
       src/controls.vala \
+      src/monitor.vala \
       src/tag_getter.vala \
       src/player.vala \
       src/utils.vala

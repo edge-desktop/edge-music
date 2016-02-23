@@ -11,7 +11,10 @@ namespace EMusic {
 
         public TagGetter(string song_file) {
             this.file = GLib.File.new_for_path(song_file);
-
+            this.song_name = this.file.get_basename();  // FIXME: Get tag name
+            this.album_name = "Get album tag";
+            this.artist_name = "Get artist name";
+            this.duration = "00";
         }
     }
 }

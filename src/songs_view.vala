@@ -2,6 +2,8 @@ namespace EMusic {
 
     public class SongsView: Gtk.ScrolledWindow {
 
+        public signal void song_selected(string truck);
+
         public Gtk.ListStore model;
         public Gtk.TreeView view;
 
@@ -11,6 +13,7 @@ namespace EMusic {
             this.view = new Gtk.TreeView.with_model(this.model);
             this.view.set_reorderable(true);
             this.view.set_headers_clickable(true);
+            this.view.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK);
             this.add(this.view);
 
 		    Gtk.CellRendererText cell = new Gtk.CellRendererText();
@@ -18,15 +21,25 @@ namespace EMusic {
 		    this.view.insert_column_with_attributes(1, "Artists", cell, "text", 1);
 		    this.view.insert_column_with_attributes(2, "Album", cell, "text", 2);
 
-		    Gtk.TreeIter iter;
-		    this.model.append(out iter);
-		    this.model.set(iter, 0, "AAAAAA1", 1, "AAAAAA2", 2, "AAAAAA3");
+		    this.button_release_event.connect(this.button_release_event_cb);
+        }
 
-		    this.model.append(out iter);
-		    this.model.set(iter, 0, "BBBBBB1", 1, "BBBBBB2", 2, "BBBBBB3");
+        private bool button_release_event_cb(Gtk.Widget view, Gdk.EventButton event) {
+            Gtk.TreePath path;
+            unowned Gtk.TreeViewColumn column;
+            int cell_x;
+            int cell_y;
+            Gtk.TreeIter iter;
 
-		    this.model.append(out iter);
-		    this.model.set(iter, 0, "CCCCCCC1", 1, "CCCCCCC2", 2, "CCCCCCC3");
+            this.view.get_path_at_pos((int)event.x, (int)event.y, out path, out column, out cell_x, out cell_y);
+            this.model.get_iter(out iter, path);
+
+            GLib.Value gvalue;
+            this.model.get_value(iter, 3, out gvalue);
+
+            this.song_selected(gvalue.dup_string());
+
+            return true;
         }
 
         public void set_entry(EMusic.SearchEntry entry) {
@@ -34,7 +47,10 @@ namespace EMusic {
         }
 
         public void add_song(string file) {
-
+            EMusic.TagGetter tags = new EMusic.TagGetter(file);
+            Gtk.TreeIter iter;
+            this.model.append(out iter);
+            this.model.set(iter, 0, tags.song_name, 1, tags.artist_name, 2, tags.album_name, 3, file);
         }
 
         public void set_songs(string[] files) {
